@@ -21,7 +21,7 @@ import numpy as np
 class PauseAnimation:
     def __init__(self):
         fig, ax = plt.subplots()
-        ax.set_title('Click to pause/resume the animation')
+        ax.set_title('Press any key to pause/resume the animation')
         x = np.linspace(-0.1, 0.1, 1000)
 
         # Start with a normal distribution
@@ -32,8 +32,9 @@ class PauseAnimation:
         self.animation = animation.FuncAnimation(
             fig, self.update, frames=200, interval=50, blit=True)
         self.paused = False
-
-        fig.canvas.mpl_connect('button_press_event', self.toggle_pause)
+        # 'key_press_event' for keyboard
+        # 'button_press_event' for mouse button
+        fig.canvas.mpl_connect('key_press_event', self.toggle_pause)
 
     def toggle_pause(self, *args, **kwargs):
         if self.paused:
