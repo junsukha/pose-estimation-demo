@@ -1,0 +1,29 @@
+import cv2
+import matplotlib.pyplot as plp
+import numpy as np
+
+fig, ax = plp.subplots(figsize=(10,10))
+cap = cv2.VideoCapture('in.mp4') 
+num_frames = int (cap.get(cv2.CAP_PROP_FRAME_COUNT))
+fps = cap.get(cv2.CAP_PROP_FPS)
+frame_time = 1.0/fps
+
+graph, = ax.plot([],[],'o')
+ret,frame = cap.read()
+frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+im = ax.imshow (frame)
+def animate(i):
+    ret, frame = cap.read()
+    if ret:
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        im.set_array(frame)
+    graph.set_data (data.X_Coord[(data.TimeStamp>i*frame_time)&(data.TimeStamp<frame_time*(i+1))],
+            data.Y_Coord[(data.TimeStamp>i*frame_time)&(data.TimeStamp<frame_time*(i+1))])
+    time.sleep(frame_time)
+    return ax, im,
+
+ani = FuncAnimation(fig, func=animate, frames=num_frames, interval=frame_time)
+Writer = animation.writers['ffmpeg']
+writer = Writer(fps=fps, metadata=dict(artist='Me'), bitrate=1800)
+ani.save('out.mp4',writer=writer)
+cap.release()
