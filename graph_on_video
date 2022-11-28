@@ -22,9 +22,9 @@ plt.show()
 x = np.linspace(0,width,frames)
 y = x/2. + 100*np.sin(2.*np.pi*x/1200)
 
-def on_key(event):
-    global keep_ploting 
-    keep_ploting = False  
+# def on_key(event):
+#     global keep_ploting 
+#     keep_ploting = False  
     
 for i in range(frames):
     fig.clf()
@@ -33,12 +33,12 @@ for i in range(frames):
     plt.imshow(frame)
     plt.plot(x,y,'k-', lw=2)
     plt.plot(x[i],y[i],'or')
-    plt.pause(0.01)
+    plt.pause(0.001)
 
-    fig.canvas.mpl_connect('key_press_event', on_key)
+    # fig.canvas.mpl_connect('key_press_event', on_key)
     # if cv2.waitKey(1) == 27:
     # if cv2.waitKey(10) & 0xFF == ord('q'):
-    
+
     #     cap.release()
     #     cv2.destroyAllWindows()
     #     break
