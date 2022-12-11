@@ -12,8 +12,13 @@ from scipy.signal import savgol_filter
 
 import seaborn as sns
 
+import os
+
 # filename = "./videos/JJ1.mp4"
 filenames = ["./videos/JJ1.mp4", "./videos/StephCurry.mp4"]
+path = './videos'
+# filenames = os.listdir(path)
+
 
 
 # cap = cv2.VideoCapture("Steph Curry.mp4")
@@ -33,6 +38,7 @@ right_shoulder_angles = []
 right_wrist_angles = []
 right_hip_angles = []
 right_knee_angles = []
+
 ## setup mediapipe instance
 images = []
 y_values =[]
@@ -40,6 +46,7 @@ for filename in filenames:
     # clear list 
     images = []
     left_elbow_angles.clear()
+    right_elbow_angles.clear()
     times = []
     time = 0
     time_for_seaborn= []    
@@ -169,18 +176,19 @@ for filename in filenames:
     ###### sampling #####
     # samples are indices that will be filtered out
     samples = np.random.choice(np.arange(len(times)), size=len(times) - 60, replace=False) # want to fix the number of frames at 60
-    print(samples)
-    sampled_left_elbow_angles = []
+    # print(samples)
+    sampled_left_elbow_angles = []        
     for i, angle in enumerate(left_elbow_angles):
         if i not in samples:
             # print(i)
             sampled_left_elbow_angles.append(angle)            
     sampled_times = np.arange(60) # mostly 30 fps and most given videos are of 2secs
-    print(sampled_left_elbow_angles)
+    # print(sampled_left_elbow_angles)
     sampled_left_elbow_angles = np.array(sampled_left_elbow_angles)
     print(f'After sampling: {len(sampled_times)}')
     plt.plot(sampled_times, sampled_left_elbow_angles, color='b', label = 'sampled_left_elbow')
     plt.savefig(f"./output-images/{filename[9:-4]}'s sampled-unsmooth-angle-vs-time.jpg")
+    ###### sampling #####
     
     ##### smooth a curve #####
     # cubic_interpolation_model = interp1d(times, left_elbow_angles, kind = "cubic")
@@ -226,113 +234,37 @@ for filename in filenames:
     plt.savefig(f"./output-images/{filename[9:-4]}'s sampled smoothed angle-vs-time.jpg")
     plt.show(block=False)
     plt.close()
-
-
-    ################ show video and graph ######################
-    # filename = './Steph Curry.mp4'
-    cap = cv2.VideoCapture(filename) # need this because cap is released before
-
-    try:
-        frames = int(cap.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT))
-        width  = int(cap.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH))
-        height = int(cap.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT))
-    except AttributeError:
-        frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-
-    fig, ax = plt.subplots(1,1)
-    plt.ion()
-    plt.show(block=False)
     
-    
-
-    #Setup a dummy path
-    # x = np.linspace(0,width,frames)
-    x = times
-    # y = x/2. + 100*np.sin(2.*np.pi*x/1200)
-    # y = Y_
-    y = -Y_
-
-
-    # y is array. convert it to list    
-    y_values += list(y)
-        
-    # need this to plot graph as the original. otherwise upside down
-    left_elbow_angles = (-np.array(left_elbow_angles)).tolist()
-    y = savgol_filter(left_elbow_angles, window_length=30, polyorder=7)
-
-    print(len(images))
-    print(len(times))
-    print(len(y))
-
-    # for i in enumerate(times): 
-    for i, image in enumerate(images):
-        fig.clear()
-        flag, frame = cap.read()
-
-        
-        plt.imshow(image)
-        # this line is to match graph width to image width
-        times = times/np.max(times)*width
-        # plt.plot(x,y,'k-', lw=2)
-        plt.plot(times, y, 'k-', lw=2) # smooth one
-        plt.plot(times, left_elbow_angles, 'g-', lw=2) # original one
-        plt.plot(times[i-1],y[i-1],'or') # red dot for each angle of smooth one
-        plt.pause(1e-5)
-        
-        
-        
-        # # Make detection
-        # results = pose.process(image) # image here is RGB
-
-        # # Recolor back to BGR
-        # image.flags.writeable = True
-        # image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-        if cv2.waitKey(10) & 0xFF == ord('q'):
-            break        
-    ################ show video and graph ######################        
 
     
 
 
 # visualize margin   
 sns.set()
-
+y_values = np.negative(y_values)
 print(f'y_values length: {len(y_values)}')
 y_values = np.array(y_values).reshape(2, -1)
-y_values = np.mean(y_values, axis=0)
+y_means = np.mean(y_values, axis=0)
+y_std = np.std(y_values, axis=0)
+y_diff = y_values[0] - y_values[1]
 
-print(f'y_values.shape: {y_values.shape}')
+# save data
+with open(r'./data/elbowMargin', 'w') as fp:
+    fp.writelines(y_values)
 
-x_axis = np.arange(len(y_values))   
-plt.plot(x_axis, y_values, 'b-', label='y_value')
-plt.fill_between(x_axis, y_values-10, y_values+10, color = 'b', alpha=0.2)
+
+print("y_std.shape: {}".format(y_std.shape))
+print(f'y_values.shape: {y_means.shape}')
+print("y_values: {}".format(y_values))
+print("y_diff: {}".format(y_diff))
+
+
+x_axis = np.arange(len(y_means))   
+plt.plot(x_axis, y_means, 'b-', label='y_value')
+plt.fill_between(x_axis, y_means-y_std, y_means+y_std, color = 'b', alpha=0.2)
 
 plt.legend(title='margin')
 plt.ioff()
 # plt.savefig
 plt.show(block=False)
 plt.savefig("./output-images/margin.jpg")
-
-
-
-
-# def show_margin(y_values):
-#     sns.set()
-    
-#     print(f'y_values length: {len(y_values)}')
-#     y_values = np.array(y_values).reshape(2, -1)
-#     y_values = np.mean(y_values, axis=0)
-
-#     print(f'y_values.shape: {y_values.shape}')
-
-#     x_axis = np.arange(len(y_values))   
-#     plt.plot(x_axis, y_values, 'b-', label='y_value')
-#     plt.fill_between(x_axis, y_values-10, y_values+10, color = 'b', alpha=0.2)
-
-#     plt.legend(title='test')
-#     plt.show()
-
-
-# show_margin(y_values)  
