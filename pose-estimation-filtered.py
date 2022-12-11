@@ -230,7 +230,7 @@ for filename in filenames:
 
     ################ show video and graph ######################
     # filename = './Steph Curry.mp4'
-    # cap = cv2.VideoCapture(filename)
+    cap = cv2.VideoCapture(filename)
 
     try:
         frames = int(cap.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT))
@@ -273,7 +273,7 @@ for filename in filenames:
         flag, frame = cap.read()
 
         
-        # plt.imshow(image)
+        plt.imshow(image)
         # this line is to match graph width to image width
         times = times/np.max(times)*width
         # plt.plot(x,y,'k-', lw=2)
