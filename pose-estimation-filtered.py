@@ -166,7 +166,8 @@ for filename in filenames:
     plt.savefig(f"./output-images/{filename[9:-4]}'s unsmooth-angle-vs-time.jpg")
     plt.close()
     
-    # sampling
+    ###### sampling #####
+    # samples are indices that will be filtered out
     samples = np.random.choice(np.arange(len(times)), size=len(times) - 60, replace=False) # want to fix the number of frames at 60
     print(samples)
     sampled_left_elbow_angles = []
@@ -174,7 +175,7 @@ for filename in filenames:
         if i not in samples:
             # print(i)
             sampled_left_elbow_angles.append(angle)            
-    sampled_times = np.arange(60)
+    sampled_times = np.arange(60) # mostly 30 fps and most given videos are of 2secs
     print(sampled_left_elbow_angles)
     sampled_left_elbow_angles = np.array(sampled_left_elbow_angles)
     print(f'After sampling: {len(sampled_times)}')
@@ -183,17 +184,18 @@ for filename in filenames:
     
     ##### smooth a curve #####
     # cubic_interpolation_model = interp1d(times, left_elbow_angles, kind = "cubic")
-    cubic_interpolation_model = interp1d(sampled_times, sampled_left_elbow_angles, kind = "cubic")
+    cubic_interpolation_model = interp1d(sampled_times, sampled_left_elbow_angles)
 
     # times = np.array(times)
     sampled_times = np.array(sampled_times)
     # X_ = np.linspace(times.min(), times.max(), 50)
     # Y_ = cubic_interpolation_model(times)
-    Y_ = cubic_interpolation_model(sampled_times)
+    # Y_ = cubic_interpolation_model(sampled_times)
     
     # apply smoothing filter   
     # Y_ = savgol_filter(Y_, len(times), 50)
-    Y_ = savgol_filter(Y_, len(sampled_times), 50)
+    Y_ = sampled_left_elbow_angles
+    Y_ = savgol_filter(Y_, window_length=30, polyorder=7)
     
     # for margin graph
     y = -Y_
@@ -230,62 +232,66 @@ for filename in filenames:
     # filename = './Steph Curry.mp4'
     # cap = cv2.VideoCapture(filename)
 
-    # try:
-    #     frames = int(cap.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT))
-    #     width  = int(cap.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH))
-    #     height = int(cap.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT))
-    # except AttributeError:
-    #     frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    #     width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    #     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    try:
+        frames = int(cap.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT))
+        width  = int(cap.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH))
+        height = int(cap.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT))
+    except AttributeError:
+        frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-    # fig, ax = plt.subplots(1,1)
-    # # plt.ion()
-    # plt.legend(title='frame and angle')
-    # plt.show(block=False)
+    fig, ax = plt.subplots(1,1)
+    plt.ion()
+    plt.legend(title='frame and angle')
+    plt.show(block=False)
+    
+    
 
-    # #Setup a dummy path
-    # # x = np.linspace(0,width,frames)
-    # x = times
-    # # y = x/2. + 100*np.sin(2.*np.pi*x/1200)
-    # # y = Y_
-    # y = -Y_
+    #Setup a dummy path
+    # x = np.linspace(0,width,frames)
+    x = times
+    # y = x/2. + 100*np.sin(2.*np.pi*x/1200)
+    # y = Y_
+    y = -Y_
 
 
-    # # y is array. convert it to list    
-    # y_values += list(y)
+    # y is array. convert it to list    
+    y_values += list(y)
         
-    # # need this to plot graph as the original. otherwise upside down
-    # left_elbow_angles = (-np.array(left_elbow_angles)).tolist()
+    # need this to plot graph as the original. otherwise upside down
+    left_elbow_angles = (-np.array(left_elbow_angles)).tolist()
+    y = savgol_filter(left_elbow_angles, window_length=30, polyorder=7)
 
-    # print(len(images))
-    # print(len(times))
-    # print(len(y))
+    print(len(images))
+    print(len(times))
+    print(len(y))
 
-    # # for i in enumerate(times): 
-    # for i, image in enumerate(images):
-    #     fig.clf()
-    #     flag, frame = cap.read()
+    # for i in enumerate(times): 
+    for i, image in enumerate(images):
+        fig.clear()
+        flag, frame = cap.read()
 
-
-    #     plt.imshow(image)
-    #     times = times/np.max(times)*width
-    #     # plt.plot(x,y,'k-', lw=2)
-    #     plt.plot(times, y, 'k-', lw=2)
-    #     plt.plot(times, left_elbow_angles, 'g-', lw=2)
-    #     plt.plot(times[i-1],y[i-1],'or')
-    #     plt.pause(0.001)
+        
+        # plt.imshow(image)
+        # this line is to match graph width to image width
+        times = times/np.max(times)*width
+        # plt.plot(x,y,'k-', lw=2)
+        plt.plot(times, y, 'k-', lw=2) # smooth one
+        plt.plot(times, left_elbow_angles, 'g-', lw=2) # original one
+        plt.plot(times[i-1],y[i-1],'or') # red dot for each angle of smooth one
+        plt.pause(1e-5)
         
         
         
-    #     # # Make detection
-    #     # results = pose.process(image) # image here is RGB
+        # # Make detection
+        # results = pose.process(image) # image here is RGB
 
-    #     # # Recolor back to BGR
-    #     # image.flags.writeable = True
-    #     # image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-    #     if cv2.waitKey(10) & 0xFF == ord('q'):
-    #         break        
+        # # Recolor back to BGR
+        # image.flags.writeable = True
+        # image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+        if cv2.waitKey(10) & 0xFF == ord('q'):
+            break        
     ################ show video and graph ######################        
 
     
