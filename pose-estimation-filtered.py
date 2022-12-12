@@ -11,9 +11,9 @@ import matplotlib.pyplot as plt
 from scipy.signal import savgol_filter
 
 import seaborn as sns
-
-# filename = "./videos/JJ1.mp4"
-filenames = ["./videos/JJ1.mp4", "./videos/StephCurry.mp4"]
+import os
+# filename = "./videos/StephCurry.mp4"
+filenames = ["./videos/StephCurry.mp4"]
 
 
 # cap = cv2.VideoCapture("Steph Curry.mp4")
@@ -279,7 +279,9 @@ for filename in filenames:
         plt.plot(times, y, 'k-', lw=2) # smooth one
         plt.plot(times, left_elbow_angles, 'g-', lw=2) # original one
         plt.plot(times[i-1],y[i-1],'or') # red dot for each angle of smooth one
-        plt.pause(1e-5)
+        plt.savefig("./graph-video/images/graph-image" + str(i) + ".jpg")
+
+        plt.pause(1e-7)
         
         
         
@@ -293,7 +295,23 @@ for filename in filenames:
             break        
     ################ show video and graph ######################        
 
-    
+# compress images to a video
+images_folder = "./graph-video/images"
+video_name = './graph-video/video/video.avi'
+
+images = [img for img in os.listdir(images_folder)]
+images.sort(key=lambda f: int(f[11:-4]))
+
+frame = cv2.imread(os.path.join(images_folder, images[0]))
+height, width, layers = frame.shape
+video = cv2.VideoWriter(video_name, 0, 1, (width,height))
+
+for image in images:
+    print(image)
+    video.write(cv2.imread(os.path.join(images_folder, image)))
+
+cv2.destroyAllWindows()
+video.release()
 
 
 # visualize margin   
