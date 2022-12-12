@@ -15,7 +15,7 @@ import seaborn as sns
 import os
 
 # filename = "./videos/JJ1.mp4"
-filenames = ["JJ1.mp4", "StephCurry.mp4"]
+# filenames = ["JJ1.mp4", "StephCurry.mp4"]
 path = './videos'
 filenames = os.listdir(path)
 
@@ -42,6 +42,20 @@ right_knee_angles = []
 ## setup mediapipe instance
 images = []
 y_values =[]
+sampled_metrics = {
+    'sampled_right_elbow_angles': [],
+    'sampled_right_shoulder_angles': [],
+    'sampled_right_wrist_angles': [],
+    'sampled_right_hip_angles': [],
+    'sampled_right_knee_angles': [],
+}
+metrics_y_values = {
+    'sampled_right_elbow_angles_y': [],
+    'sampled_right_shoulder_angles_y': [],
+    'sampled_right_wrist_angles_y': [],
+    'sampled_right_hip_angles_y': [],
+    'sampled_right_knee_angles_y': [],
+}
 for filename in filenames:
     # filename is the name of each file. Should append folder name
     filename = './videos/'+filename
@@ -190,38 +204,25 @@ for filename in filenames:
         'right_hip_angles': right_hip_angles,
         'right_knee_angles': right_knee_angles,
     }
-    sampled_metrics = {
-        'sampled_right_elbow_angles': [],
-        'sampled_right_shoulder_angles': [],
-        'sampled_right_wrist_angles': [],
-        'sampled_right_hip_angles': [],
-        'sampled_right_knee_angles': [],
-    }
-    metrics_y_values = {
-        'sampled_right_elbow_angles_y': [],
-        'sampled_right_shoulder_angles_y': [],
-        'sampled_right_wrist_angles_y': [],
-        'sampled_right_hip_angles_y': [],
-        'sampled_right_knee_angles_y': [],
-    }
+    
     sampled_left_elbow_angles = []
     for metric in tracked_metrics:
-        y_values = []
+        # y_values = []
         for i, angle in enumerate(tracked_metrics[metric]):
             if i not in samples:
                 # print(i)
                 sampled_metrics['sampled_' + metric].append(angle)
         sampled_times = np.arange(60) # mostly 30 fps and most given videos are of 2secs
         # print(sampled_left_elbow_angles)
-        sampled_metrics['sampled_' + metric] = np.array(sampled_metrics['sampled_' + metric])
+        # sampled_metrics['sampled_' + metric] = np.array(sampled_metrics['sampled_' + metric])
         print(f'After sampling: {len(sampled_times)}')
-        plt.plot(sampled_times, sampled_metrics['sampled_' + metric], color='b', label = 'sampled_' + metric)
+        plt.plot(sampled_times, sampled_metrics['sampled_' + metric][-60:], color='b', label = 'sampled_' + metric)
         plt.savefig(f"./output-images/{filename[9:-4]}'s sampled-unsmooth-angle-vs-time.jpg")
     ###### sampling #####
     
     ##### smooth a curve #####
     # cubic_interpolation_model = interp1d(times, left_elbow_angles, kind = "cubic")
-        cubic_interpolation_model = interp1d(sampled_times, sampled_metrics['sampled_' + metric])
+        cubic_interpolation_model = interp1d(sampled_times, sampled_metrics['sampled_' + metric][-60:])
 
         # times = np.array(times)
         sampled_times = np.array(sampled_times)
@@ -231,7 +232,7 @@ for filename in filenames:
     
     # apply smoothing filter   
     # Y_ = savgol_filter(Y_, len(times), 50)
-        Y_ = sampled_metrics['sampled_' + metric]
+        Y_ = sampled_metrics['sampled_' + metric][-60:]
         Y_ = savgol_filter(Y_, window_length=30, polyorder=7)
     
     # for margin graph
@@ -274,7 +275,7 @@ for filename in filenames:
 for metric in metrics_y_values:
     sns.set()
     y_values = np.negative(metrics_y_values[metric])
-    print(f'y_values length: {len(y_values)}')
+    print(f'y_values shape: {y_values.shape}')
     y_values = np.array(y_values).reshape(len(filenames), -1)
     y_means = np.mean(y_values, axis=0)
     y_std = np.std(y_values, axis=0)
