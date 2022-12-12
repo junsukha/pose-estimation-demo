@@ -15,9 +15,9 @@ import seaborn as sns
 import os
 
 # filename = "./videos/JJ1.mp4"
-filenames = ["./videos/JJ1.mp4", "./videos/StephCurry.mp4"]
+# filenames = ["./videos/JJ1.mp4", "./videos/StephCurry.mp4"]
 path = './videos'
-# filenames = os.listdir(path)
+filenames = os.listdir(path)
 
 
 
@@ -43,10 +43,15 @@ right_knee_angles = []
 images = []
 y_values =[]
 for filename in filenames:
+    filename = './videos/' + filename
     # clear list 
     images = []
     left_elbow_angles.clear()
     right_elbow_angles.clear()
+    right_shoulder_angles.clear()
+    right_wrist_angles.clear()
+    right_hip_angles.clear()
+    right_knee_angles.clear()
     times = []
     time = 0
     time_for_seaborn= []    
@@ -177,45 +182,68 @@ for filename in filenames:
     # samples are indices that will be filtered out
     samples = np.random.choice(np.arange(len(times)), size=len(times) - 60, replace=False) # want to fix the number of frames at 60
     # print(samples)
-    sampled_left_elbow_angles = []        
-    for i, angle in enumerate(left_elbow_angles):
-        if i not in samples:
-            # print(i)
-            sampled_left_elbow_angles.append(angle)            
-    sampled_times = np.arange(60) # mostly 30 fps and most given videos are of 2secs
-    # print(sampled_left_elbow_angles)
-    sampled_left_elbow_angles = np.array(sampled_left_elbow_angles)
-    print(f'After sampling: {len(sampled_times)}')
-    plt.plot(sampled_times, sampled_left_elbow_angles, color='b', label = 'sampled_left_elbow')
-    plt.savefig(f"./output-images/{filename[9:-4]}'s sampled-unsmooth-angle-vs-time.jpg")
+    tracked_metrics = {
+        'right_elbow_angles': right_elbow_angles,
+        'right_shoulder_angles': right_shoulder_angles,
+        'right_wrist_angles': right_wrist_angles,
+        'right_hip_angles': right_hip_angles,
+        'right_knee_angles': right_knee_angles,
+    }
+    sampled_metrics = {
+        'sampled_right_elbow_angles': [],
+        'sampled_right_shoulder_angles': [],
+        'sampled_right_wrist_angles': [],
+        'sampled_right_hip_angles': [],
+        'sampled_right_knee_angles': [],
+    }
+    metrics_y_values = {
+        'sampled_right_elbow_angles_y': [],
+        'sampled_right_shoulder_angles_y': [],
+        'sampled_right_wrist_angles_y': [],
+        'sampled_right_hip_angles_y': [],
+        'sampled_right_knee_angles_y': [],
+    }
+    sampled_left_elbow_angles = []
+    for metric in tracked_metrics:
+        y_values = []
+        for i, angle in enumerate(tracked_metrics[metric]):
+            if i not in samples:
+                # print(i)
+                sampled_metrics['sampled_' + metric].append(angle)
+        sampled_times = np.arange(60) # mostly 30 fps and most given videos are of 2secs
+        # print(sampled_left_elbow_angles)
+        sampled_metrics['sampled_' + metric] = np.array(sampled_metrics['sampled_' + metric])
+        print(f'After sampling: {len(sampled_times)}')
+        plt.plot(sampled_times, sampled_metrics['sampled_' + metric], color='b', label = 'sampled_' + metric)
+        plt.savefig(f"./output-images/{filename[9:-4]}'s sampled-unsmooth-angle-vs-time.jpg")
     ###### sampling #####
     
     ##### smooth a curve #####
     # cubic_interpolation_model = interp1d(times, left_elbow_angles, kind = "cubic")
-    cubic_interpolation_model = interp1d(sampled_times, sampled_left_elbow_angles)
+        cubic_interpolation_model = interp1d(sampled_times, sampled_metrics['sampled_' + metric])
 
-    # times = np.array(times)
-    sampled_times = np.array(sampled_times)
-    # X_ = np.linspace(times.min(), times.max(), 50)
-    # Y_ = cubic_interpolation_model(times)
-    # Y_ = cubic_interpolation_model(sampled_times)
+        # times = np.array(times)
+        sampled_times = np.array(sampled_times)
+        # X_ = np.linspace(times.min(), times.max(), 50)
+        # Y_ = cubic_interpolation_model(times)
+        # Y_ = cubic_interpolation_model(sampled_times)
     
     # apply smoothing filter   
     # Y_ = savgol_filter(Y_, len(times), 50)
-    Y_ = sampled_left_elbow_angles
-    Y_ = savgol_filter(Y_, window_length=30, polyorder=7)
+        Y_ = sampled_metrics['sampled_' + metric]
+        Y_ = savgol_filter(Y_, window_length=30, polyorder=7)
     
     # for margin graph
-    y = -Y_
+        y = -Y_
     # add list y of each video 
-    print(f'{filename} video frames: {len(y)}')
-    y_values += list(y)
+        print(f'{filename} video frames: {len(y)}')
+        metrics_y_values['sampled_' + metric + '_y'] += list(y)
     ##### smooth a curve #####
     
     ## plot each angle
     # plot left angles
     # plt.plot(times,Y_, color='r', label='smooth')
-    plt.plot(sampled_times,Y_, color='r', label='smooth')
+        plt.plot(sampled_times,Y_, color='r', label='smooth')
     # plt.plot(times, left_shoulder_angles, color='r', label='left_shoulder')
     # plt.plot(times, left_wrist_angles, color='g', label = 'left wrist')
     # plt.plot(times, left_hip_angles, color='y', label = 'left hip')
@@ -228,43 +256,47 @@ for filename in filenames:
     # plt.plot(times, right_hip_angles, color='#FFF01F', label = 'right hip')
     # plt.plot(times, right_knee_angles, color='#A020F0', label = 'right knee')
 
-    plt.xlabel('time')
-    plt.ylabel('angle')
-    plt.legend(title=f"{filename[9:-4]}'s angle vs time")
-    plt.savefig(f"./output-images/{filename[9:-4]}'s sampled smoothed angle-vs-time.jpg")
-    plt.show(block=False)
-    plt.close()
+        plt.xlabel('time')
+        plt.ylabel('angle')
+        plt.legend(title=f"{filename[9:-4]}'s angle vs time")
+        plt.savefig(f"./output-images/{filename[9:-4]}'s sampled smoothed " + metric[6:-7] + "angle-vs-time.jpg")
+        plt.show(block=False)
+        plt.close()
     
 
     
 
 
 # visualize margin   
-sns.set()
-y_values = np.negative(y_values)
-print(f'y_values length: {len(y_values)}')
-y_values = np.array(y_values).reshape(2, -1)
-y_means = np.mean(y_values, axis=0)
-y_std = np.std(y_values, axis=0)
-y_diff = y_values[0] - y_values[1]
+for metric in metrics_y_values:
+    sns.set()
+    y_values = np.negative(metrics_y_values[metric])
+    print(f'y_values length: {len(y_values)}')
+    y_values = np.array(y_values).reshape(len(filenames), -1)
+    y_means = np.mean(y_values, axis=0)
+    y_std = np.std(y_values, axis=0)
+    y_diff = y_values[0] - y_values[1]
 
-# save data
-with open(r'./data/elbowMargin', 'w') as fp:
-    fp.writelines(y_values)
-
-
-print("y_std.shape: {}".format(y_std.shape))
-print(f'y_values.shape: {y_means.shape}')
-print("y_values: {}".format(y_values))
-print("y_diff: {}".format(y_diff))
+    # save data
+    np.savetxt('./data/' + metric[8:-9], y_values)
+    # with open(r'./data/' + metric[6:-7], 'w') as fp:
+    #     fp.writelines(y_values)
 
 
-x_axis = np.arange(len(y_means))   
-plt.plot(x_axis, y_means, 'b-', label='y_value')
-plt.fill_between(x_axis, y_means-y_std, y_means+y_std, color = 'b', alpha=0.2)
+    print("y_std.shape: {}".format(y_std.shape))
+    print(f'y_values.shape: {y_means.shape}')
+    print("y_values: {}".format(y_values))
+    print("y_diff: {}".format(y_diff))
 
-plt.legend(title='margin')
-plt.ioff()
-# plt.savefig
-plt.show(block=False)
-plt.savefig("./output-images/margin.jpg")
+
+    x_axis = np.arange(len(y_means))   
+    plt.plot(x_axis, y_means, 'b-', label='y_value')
+    plt.fill_between(x_axis, y_means-y_std, y_means+y_std, color = 'b', alpha=0.2)
+    plt.ylim([0, 180])
+
+    plt.legend(title='margin')
+    plt.ioff()
+    # plt.savefig
+    plt.show(block=False)
+    plt.savefig("./output-images/" + metric[8:-9] + "-margin.jpg")
+    plt.close()
