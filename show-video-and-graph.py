@@ -12,8 +12,11 @@ from scipy.signal import savgol_filter
 
 import seaborn as sns
 import os
+import sys
 # filename = "./videos/StephCurry.mp4"
-filenames = ["./videos/StephCurry.mp4"]
+# user's video file
+filename = sys.argv[1]
+filenames = [filename]
 
 
 # cap = cv2.VideoCapture("Steph Curry.mp4")
