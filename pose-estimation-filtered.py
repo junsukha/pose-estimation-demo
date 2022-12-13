@@ -33,9 +33,12 @@ right_shoulder_angles = []
 right_wrist_angles = []
 right_hip_angles = []
 right_knee_angles = []
+
 ## setup mediapipe instance
 images = []
 y_values =[]
+
+
 for filename in filenames:
     # clear list 
     images = []
@@ -281,7 +284,7 @@ for filename in filenames:
         plt.plot(times[i-1],y[i-1],'or') # red dot for each angle of smooth one
         plt.savefig("./graph-video/images/graph-image" + str(i) + ".jpg")
 
-        plt.pause(1e-7)
+        # plt.pause(1e-7)
         
         
         
@@ -304,7 +307,7 @@ images.sort(key=lambda f: int(f[11:-4]))
 
 frame = cv2.imread(os.path.join(images_folder, images[0]))
 height, width, layers = frame.shape
-video = cv2.VideoWriter(video_name, 0, 1, (width,height))
+video = cv2.VideoWriter(video_name, 0, 10, (width,height))
 
 for image in images:
     print(image)
