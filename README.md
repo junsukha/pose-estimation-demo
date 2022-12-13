@@ -34,7 +34,7 @@
     <img src="images/logo.png" alt="Logo" width="80" height="80">
   </a> -->
 
-<h3 align="center">Anaylyzing Basketball Shooting Poses Using 3D Human Pose Estimation</h3>
+ <h3 align="center">Anaylyzing Basketball Shooting Poses Using 3D Human Pose Estimation</h3>
 
   <!-- <p align="center">
     project_description
@@ -121,10 +121,10 @@ As you run a file, if an error message complains about something, just install i
 
 ### How to run your video
 
-Run show-video-and-graph.py. In the file at line 16, put your video path.
+Run show-video-and-graph.py. Use your video path as an argument. Omit < and > when using argument.
 
   ```sh
-  filenames = ["path_to_your_video"]
+ python show-video-and-graph.py <path_to_your_video>
   ```
 
 Next, run imagesToVideo.py
