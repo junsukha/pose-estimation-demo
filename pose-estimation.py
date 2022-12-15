@@ -12,14 +12,7 @@ from scipy.signal import savgol_filter
 
 import seaborn as sns
 
-# filename = "./videos/JJ1.mp4"
 filenames = ["./videos/JJ1.mp4"]
-
-
-# cap = cv2.VideoCapture("Steph Curry.mp4")
-# Curl counter variables
-# counter = 0
-# stage = None
 
 times = []
 time = 0
@@ -95,13 +88,7 @@ for filename in filenames:
                 # knee angle
                 left_ankle = [landmarks[mp_pose.PoseLandmark.LEFT_ANKLE.value].x, landmarks[mp_pose.PoseLandmark.LEFT_ANKLE.value].y]
                 right_ankle = [landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value].x, landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value].y]
-                
-                # left_ = [landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x, landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y]
 
-                # hip = [landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x, landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y]
-                # shoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x, landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
-                # elbow = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x, landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]   
-                
                 left_elbow_angle = calculateangle.calculate_angle(left_shoulder, left_elbow, left_wrist)
                 left_shoulder_angle = calculateangle.calculate_angle(left_hip, left_shoulder, left_elbow)
                 left_wrist_angle = calculateangle.calculate_angle(left_elbow, left_wrist, left_index)
@@ -137,15 +124,6 @@ for filename in filenames:
                             cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
             except:
                 pass
-            
-            ## draw only relevant points. Do not draw points on a face
-            # points_on_face = [1,2,3,4,5,6,7,8,9,10]
-            # for i, landmark in enumerate(results.pose_landmarks.landmark):
-            #     if (landmark in points_on_face):             
-            
-            # filtered = [landmark for i, landmark in enumerate(results.pose_landmarks.landmark) if i not in points_on_face]
-            # results.pose_landmarks.landmark = filtered
-            # results.pose_landmarks
         
             mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
                                     mp_drawing.DrawingSpec(color=(245,117,66), thickness=2, circle_radius=2),
@@ -185,14 +163,10 @@ for filename in filenames:
     # cubic_interpolation_model = interp1d(times, left_elbow_angles, kind = "cubic")
     cubic_interpolation_model = interp1d(sampled_times, sampled_left_elbow_angles, kind = "cubic")
 
-    # times = np.array(times)
     sampled_times = np.array(sampled_times)
-    # X_ = np.linspace(times.min(), times.max(), 50)
-    # Y_ = cubic_interpolation_model(times)
     Y_ = cubic_interpolation_model(sampled_times)
     
     # apply smoothing filter   
-    # Y_ = savgol_filter(Y_, len(times), 50)
     Y_ = savgol_filter(Y_, len(sampled_times), 50)
     
     # for margin graph
@@ -221,73 +195,7 @@ for filename in filenames:
     plt.legend(title=f"{filename[9:-4]}'s angle vs time")
     plt.savefig(f"./output-images/{filename[9:-4]}'s sampled smoothed angle-vs-time.jpg")
     plt.show(block=False)
-    plt.close()
-
-
-    ################ show video and graph ######################
-    # filename = './Steph Curry.mp4'
-    # cap = cv2.VideoCapture(filename)
-
-    # try:
-    #     frames = int(cap.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT))
-    #     width  = int(cap.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH))
-    #     height = int(cap.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT))
-    # except AttributeError:
-    #     frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    #     width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    #     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-
-    # fig, ax = plt.subplots(1,1)
-    # # plt.ion()
-    # plt.legend(title='frame and angle')
-    # plt.show(block=False)
-
-    # #Setup a dummy path
-    # # x = np.linspace(0,width,frames)
-    # x = times
-    # # y = x/2. + 100*np.sin(2.*np.pi*x/1200)
-    # # y = Y_
-    # y = -Y_
-
-
-    # # y is array. convert it to list    
-    # y_values += list(y)
-        
-    # # need this to plot graph as the original. otherwise upside down
-    # left_elbow_angles = (-np.array(left_elbow_angles)).tolist()
-
-    # print(len(images))
-    # print(len(times))
-    # print(len(y))
-
-    # # for i in enumerate(times): 
-    # for i, image in enumerate(images):
-    #     fig.clf()
-    #     flag, frame = cap.read()
-
-
-    #     plt.imshow(image)
-    #     times = times/np.max(times)*width
-    #     # plt.plot(x,y,'k-', lw=2)
-    #     plt.plot(times, y, 'k-', lw=2)
-    #     plt.plot(times, left_elbow_angles, 'g-', lw=2)
-    #     plt.plot(times[i-1],y[i-1],'or')
-    #     plt.pause(0.001)
-        
-        
-        
-    #     # # Make detection
-    #     # results = pose.process(image) # image here is RGB
-
-    #     # # Recolor back to BGR
-    #     # image.flags.writeable = True
-    #     # image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-    #     if cv2.waitKey(10) & 0xFF == ord('q'):
-    #         break        
-    ################ show video and graph ######################        
-
-    
-
+    plt.close() 
 
 # visualize margin   
 sns.set()

@@ -13,16 +13,9 @@ from scipy.signal import savgol_filter
 import seaborn as sns
 import os
 import sys
-# filename = "./videos/StephCurry.mp4"
-# user's video file
+
 filename = sys.argv[1]
 filenames = [filename]
-
-
-# cap = cv2.VideoCapture("Steph Curry.mp4")
-# Curl counter variables
-# counter = 0
-# stage = None
 
 times = []
 time = 0
@@ -84,7 +77,6 @@ for filename in filenames:
             # Extract landmarks
             try:
                 landmarks = results.pose_landmarks.landmark # hold landamrks. including x,y,z. Use this for calculating angles
-                # print(landmarks[mp_pose.PoseLandmark.LEFT_FOOT_INDEX])
                 # Filter out landmarks with low visibility
                 left_shoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x, landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
                 left_elbow = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x, landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
@@ -149,16 +141,7 @@ for filename in filenames:
                             tuple(np.multiply(left_elbow, [640, 480]).astype(int)), # controal [640, 480] to window size
                             cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
             except:
-                pass
-            
-            ## draw only relevant points. Do not draw points on a face
-            # points_on_face = [1,2,3,4,5,6,7,8,9,10]
-            # for i, landmark in enumerate(results.pose_landmarks.landmark):
-            #     if (landmark in points_on_face):             
-            
-            # filtered = [landmark for i, landmark in enumerate(results.pose_landmarks.landmark) if i not in points_on_face]
-            # results.pose_landmarks.landmark = filtered
-            # results.pose_landmarks
+                pass            
         
             mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
                                     mp_drawing.DrawingSpec(color=(245,117,66), thickness=2, circle_radius=2),
@@ -183,14 +166,11 @@ for filename in filenames:
     for metric in tracked_metrics:
         
         ##### smooth a curve #####
-        # cubic_interpolation_model = interp1d(times, left_elbow_angles, kind = "cubic")
         cubic_interpolation_model = interp1d(times, tracked_metrics[metric])
 
-        # times = np.array(times)
         times = np.array(times)
         
         # apply smoothing filter   
-        # Y_ = savgol_filter(Y_, len(times), 50)
         Y_ = tracked_metrics[metric]
         Y_ = savgol_filter(Y_, window_length=30, polyorder=7)
         
@@ -240,8 +220,6 @@ for filename in filenames:
         fig, ax = plt.subplots(1,1)
         plt.ion()
         plt.show(block=False)
-        
-        
 
         #Setup a dummy path
         x = times
@@ -273,9 +251,7 @@ for filename in filenames:
             plt.savefig("./graph-video/images/"+ metric + "/graph-image" + str(i) + ".jpg")
       
             if cv2.waitKey(10) & 0xFF == ord('q'):
-                break      
-            
-
+                break                 
         ################ show video and graph ######################        
 
 

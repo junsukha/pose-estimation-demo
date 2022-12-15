@@ -123,30 +123,11 @@ for filename in filenames:
                 left_ankle = [landmarks[mp_pose.PoseLandmark.LEFT_ANKLE.value].x, landmarks[mp_pose.PoseLandmark.LEFT_ANKLE.value].y]
                 right_ankle = [landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value].x, landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value].y]
                 
-                # left_ = [landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x, landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y]
-
-                # hip = [landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x, landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y]
-                # shoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x, landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
-                # elbow = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x, landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]   
-                
-                left_elbow_angle = calculateangle.calculate_angle(left_shoulder, left_elbow, left_wrist)
-                left_shoulder_angle = calculateangle.calculate_angle(left_hip, left_shoulder, left_elbow)
-                left_wrist_angle = calculateangle.calculate_angle(left_elbow, left_wrist, left_index)
-                left_hip_angle = calculateangle.calculate_angle(left_knee, left_hip, left_shoulder)
-                left_knee_angle = calculateangle.calculate_angle(left_ankle, left_knee, left_hip)
-
                 right_elbow_angle = calculateangle.calculate_angle(right_shoulder, right_elbow, right_wrist)
                 right_shoulder_angle = calculateangle.calculate_angle(right_hip, right_shoulder, right_elbow)
                 right_wrist_angle = calculateangle.calculate_angle(right_elbow, right_wrist, right_index)
                 right_hip_angle = calculateangle.calculate_angle(right_knee, right_hip, right_shoulder)
                 right_knee_angle = calculateangle.calculate_angle(right_ankle, right_knee, right_hip)
-                
-                # if time % 5 == 0:
-                left_elbow_angles.append(left_elbow_angle)
-                left_shoulder_angles.append(left_shoulder_angle)
-                left_wrist_angles.append(left_wrist_angle)
-                left_hip_angles.append(left_hip_angle)
-                left_knee_angles.append(left_knee_angle)
 
                 right_elbow_angles.append(right_elbow_angle)
                 right_shoulder_angles.append(right_shoulder_angle)
@@ -163,17 +144,7 @@ for filename in filenames:
                             tuple(np.multiply(left_elbow, [640, 480]).astype(int)), # controal [640, 480] to window size
                             cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
             except:
-                pass
-            
-            ## draw only relevant points. Do not draw points on a face
-            # points_on_face = [1,2,3,4,5,6,7,8,9,10]
-            # for i, landmark in enumerate(results.pose_landmarks.landmark):
-            #     if (landmark in points_on_face):             
-            
-            # filtered = [landmark for i, landmark in enumerate(results.pose_landmarks.landmark) if i not in points_on_face]
-            # results.pose_landmarks.landmark = filtered
-            # results.pose_landmarks
-        
+                pass           
             mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
                                     mp_drawing.DrawingSpec(color=(245,117,66), thickness=2, circle_radius=2),
                                     mp_drawing.DrawingSpec(color=(245,66,230), thickness=2, circle_radius=2)) # image here is BGR
@@ -226,12 +197,6 @@ for filename in filenames:
 
         # times = np.array(times)
         sampled_times = np.array(sampled_times)
-        # X_ = np.linspace(times.min(), times.max(), 50)
-        # Y_ = cubic_interpolation_model(times)
-        # Y_ = cubic_interpolation_model(sampled_times)
-    
-    # apply smoothing filter   
-    # Y_ = savgol_filter(Y_, len(times), 50)
         Y_ = sampled_metrics['sampled_' + metric][-60:]
         Y_ = savgol_filter(Y_, window_length=30, polyorder=7)
     
@@ -242,35 +207,8 @@ for filename in filenames:
         metrics_y_values['sampled_' + metric + '_y'] += list(y)
     ##### smooth a curve #####
     
-    ## plot each angle
-    # plot left angles
-    # plt.plot(times,Y_, color='r', label='smooth')
-        plt.plot(sampled_times,Y_, color='r', label='smooth')
-    # plt.plot(times, left_shoulder_angles, color='r', label='left_shoulder')
-    # plt.plot(times, left_wrist_angles, color='g', label = 'left wrist')
-    # plt.plot(times, left_hip_angles, color='y', label = 'left hip')
-    # plt.plot(times, left_knee_angles, color='m', label = 'left knee')
-
-        # plot right angles
-        # plt.plot(times, right_elbow_angles, color='#87CEEB', label = 'right_elbow')
-        # plt.plot(times, right_shoulder_angles, color='#FFC0CB', label='right_shoulder')
-        # plt.plot(times, right_wrist_angles, color='#90EE90', label = 'right wrist')
-        # plt.plot(times, right_hip_angles, color='#FFF01F', label = 'right hip')
-        # plt.plot(times, right_knee_angles, color='#A020F0', label = 'right knee')
-
-        plt.xlabel('time')
-        plt.ylabel('angle')
-        plt.legend(title=f"{filename[9:-4]}'s angle vs time")
-        plt.savefig(f"./output-images/{filename[9:-4]}'s sampled smoothed " + metric[6:-7] + "angle-vs-time.jpg")
-        plt.show(block=False)
-        plt.close()
-    
-
-    
-
 # len(y_values) should bue # videos * 60 * # angles = 10 * 60 * 5... for each video, log 60 floats of each angle -> 60 * 5.  10 videos -> 10*60*5
 # so should be 60 * something
-
 # visualize margin   
 for metric in metrics_y_values:
     sns.set()
@@ -283,9 +221,6 @@ for metric in metrics_y_values:
 
     # save data
     np.savetxt('./data/' + metric[8:-9], y_values)
-    # with open(r'./data/' + metric[6:-7], 'w') as fp:
-    #     fp.writelines(y_values)
-
 
     print("y_std.shape: {}".format(y_std.shape))
     print(f'y_values.shape: {y_means.shape}')

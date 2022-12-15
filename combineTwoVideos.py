@@ -1,34 +1,6 @@
 import cv2
 import matplotlib.pyplot as plt
 
-# # video read
-# Video1 = "./videos/JJ1.mp4"
-# Video2 = "./videos/Steph curry.mp4"
-
-# cap2 = cv2.VideoCapture(Video2)
-
-# # acquiring the fps and the size of the Video one
-# cap1 = cv2.VideoCapture(Video1)
-# fps_c1 = cap1.get(cv2.CAP_PROP_FPS)
-# Video_h1 = cap1.get(cv2.CAP_PROP_FRAME_HEIGHT)
-# Video_w1 = cap1.get(cv2.CAP_PROP_FRAME_WIDTH)
-
-# while (True):
-#    ret,frame=cap.read()
-#    cv2.imshow("video",frame)
-#    if cv2.waitKey(1)&0xFF==ord('q'):
-#        cv2.destroyAllWindows()
-#        break
-   
-
-# def Fram_connect(fram1, frame2, h = Video_h, w = Video_w):
-#       frame2 = cv2.resize(frame2, (int(Video_w), int(Video_h)), interpolation = cv2.INTER_AREA)
-#   BG = cv2.resize(frame1, (int(Video_w * 2), int(Video_h)), interpolation = cv2.INTER_AREA)
-#   BG[0:int(Video_h),0:int(Video_w)] = frame1
-#   BG[0:int(Video_h),int(Video_w):int(Video_w*2)] = frame2
-#   return (BG)
-
-
 
 import argparse
 

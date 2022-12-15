@@ -12,14 +12,8 @@ from scipy.signal import savgol_filter
 
 import seaborn as sns
 import os
-# filename = "./videos/StephCurry.mp4"
+
 filenames = ["./videos/StephCurry.mp4"]
-
-
-# cap = cv2.VideoCapture("Steph Curry.mp4")
-# Curl counter variables
-# counter = 0
-# stage = None
 
 times = []
 time = 0
@@ -98,13 +92,7 @@ for filename in filenames:
                 # knee angle
                 left_ankle = [landmarks[mp_pose.PoseLandmark.LEFT_ANKLE.value].x, landmarks[mp_pose.PoseLandmark.LEFT_ANKLE.value].y]
                 right_ankle = [landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value].x, landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value].y]
-                
-                # left_ = [landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x, landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y]
 
-                # hip = [landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x, landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y]
-                # shoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x, landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
-                # elbow = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x, landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]   
-                
                 left_elbow_angle = calculateangle.calculate_angle(left_shoulder, left_elbow, left_wrist)
                 left_shoulder_angle = calculateangle.calculate_angle(left_hip, left_shoulder, left_elbow)
                 left_wrist_angle = calculateangle.calculate_angle(left_elbow, left_wrist, left_index)
@@ -140,15 +128,6 @@ for filename in filenames:
                             cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
             except:
                 pass
-            
-            ## draw only relevant points. Do not draw points on a face
-            # points_on_face = [1,2,3,4,5,6,7,8,9,10]
-            # for i, landmark in enumerate(results.pose_landmarks.landmark):
-            #     if (landmark in points_on_face):             
-            
-            # filtered = [landmark for i, landmark in enumerate(results.pose_landmarks.landmark) if i not in points_on_face]
-            # results.pose_landmarks.landmark = filtered
-            # results.pose_landmarks
         
             mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
                                     mp_drawing.DrawingSpec(color=(245,117,66), thickness=2, circle_radius=2),
@@ -189,12 +168,8 @@ for filename in filenames:
     # cubic_interpolation_model = interp1d(times, left_elbow_angles, kind = "cubic")
     cubic_interpolation_model = interp1d(sampled_times, sampled_left_elbow_angles)
 
-    # times = np.array(times)
     sampled_times = np.array(sampled_times)
-    # X_ = np.linspace(times.min(), times.max(), 50)
-    # Y_ = cubic_interpolation_model(times)
-    # Y_ = cubic_interpolation_model(sampled_times)
-    
+
     # apply smoothing filter   
     # Y_ = savgol_filter(Y_, len(times), 50)
     Y_ = sampled_left_elbow_angles
@@ -208,8 +183,6 @@ for filename in filenames:
     ##### smooth a curve #####
     
     ## plot each angle
-    # plot left angles
-    # plt.plot(times,Y_, color='r', label='smooth')
     plt.plot(sampled_times,Y_, color='r', label='smooth')
     # plt.plot(times, left_shoulder_angles, color='r', label='left_shoulder')
     # plt.plot(times, left_wrist_angles, color='g', label = 'left wrist')
@@ -248,15 +221,9 @@ for filename in filenames:
     plt.ion()
     plt.show(block=False)
     
-    
-
     #Setup a dummy path
-    # x = np.linspace(0,width,frames)
     x = times
-    # y = x/2. + 100*np.sin(2.*np.pi*x/1200)
-    # y = Y_
     y = -Y_
-
 
     # y is array. convert it to list    
     y_values += list(y)
@@ -274,7 +241,6 @@ for filename in filenames:
         fig.clear()
         flag, frame = cap.read()
 
-        
         plt.imshow(image)
         # this line is to match graph width to image width
         times = times/np.max(times)*width
@@ -284,15 +250,6 @@ for filename in filenames:
         plt.plot(times[i-1],y[i-1],'or') # red dot for each angle of smooth one
         plt.savefig("./graph-video/images/graph-image" + str(i) + ".jpg")
 
-        # plt.pause(1e-7)
-        
-        
-        
-        # # Make detection
-        # results = pose.process(image) # image here is RGB
-
-        # # Recolor back to BGR
-        # image.flags.writeable = True
         # image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
         if cv2.waitKey(10) & 0xFF == ord('q'):
             break        
@@ -335,25 +292,3 @@ plt.ioff()
 # plt.savefig
 plt.show(block=False)
 plt.savefig("./output-images/margin.jpg")
-
-
-
-
-# def show_margin(y_values):
-#     sns.set()
-    
-#     print(f'y_values length: {len(y_values)}')
-#     y_values = np.array(y_values).reshape(2, -1)
-#     y_values = np.mean(y_values, axis=0)
-
-#     print(f'y_values.shape: {y_values.shape}')
-
-#     x_axis = np.arange(len(y_values))   
-#     plt.plot(x_axis, y_values, 'b-', label='y_value')
-#     plt.fill_between(x_axis, y_values-10, y_values+10, color = 'b', alpha=0.2)
-
-#     plt.legend(title='test')
-#     plt.show()
-
-
-# show_margin(y_values)  
